@@ -1,0 +1,397 @@
+<title>Hanuman Run Hero</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Mukta:wght@400;600;700&display=swap">
+<style>
+/* Layout: one dusk-temple stage as the hero, controls under it, a compact character sheet below. Single committed dark look. */
+:root {
+  --night: #17122E;
+  --panel: #221A40;
+  --ink: #F7EBD9;
+  --muted: #B9A9C9;
+  --saffron: #F08A3C;
+  --gold: #F2B630;
+  --sindoor: #E0602A;
+  --display: "Yatra One", "Mukta", Georgia, serif;
+  --body: "Mukta", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+html, body { background: var(--night); color: var(--ink); }
+body { font-family: var(--body); font-size: 16px; line-height: 1.5; }
+.wrap {
+  max-width: 980px; margin: 0 auto;
+  padding-block: 24px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 20px;
+}
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
+h1 { font-family: var(--display); font-weight: 400; font-size: clamp(2rem, 6vw, 3.2rem); line-height: 1; margin: 0; color: var(--gold); text-wrap: balance; }
+header p { margin: 0; color: var(--muted); }
+
+.stage { position: relative; border-radius: 18px; overflow: hidden; background: #1B1440; box-shadow: 0 20px 60px rgba(0,0,0,.45); }
+.stage svg.scene { display: block; width: 100%; height: auto; max-width: 100%; }
+.hud { position: absolute; top: 12px; left: 14px; right: 14px; display: flex; justify-content: space-between; pointer-events: none;
+  font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .04em; text-shadow: 0 2px 4px rgba(0,0,0,.6); font-size: clamp(12px, 2.4vw, 16px); }
+.hud span b { color: var(--gold); }
+
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.controls button {
+  font: 600 16px var(--body); color: var(--ink); background: var(--panel);
+  border: 2px solid #3A2E62; border-radius: 999px; padding: 8px 20px; cursor: pointer;
+}
+.controls button:hover { border-color: var(--saffron); }
+.controls button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.controls button[aria-pressed="true"] { background: var(--saffron); border-color: var(--saffron); color: #2A1406; }
+.controls .hint { color: var(--muted); font-size: 14px; }
+kbd { font: 600 12px var(--body); border: 1px solid #4A3D75; border-radius: 4px; padding: 1px 6px; }
+
+.sheet { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.sheet section { background: var(--panel); border-radius: 14px; padding: 18px 20px; min-width: 0; }
+.sheet h2 { font-family: var(--display); font-weight: 400; font-size: 1.35rem; margin: 0 0 10px; color: var(--saffron); }
+.sheet ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.sheet li { display: flex; gap: 10px; align-items: baseline; }
+.sheet li strong { min-width: 92px; color: var(--ink); }
+.sheet li span { color: var(--muted); }
+.sw { width: 22px; height: 22px; border-radius: 6px; flex: none; align-self: center; border: 1px solid rgba(255,255,255,.15); }
+code { font-size: 13px; color: var(--muted); margin-left: auto; }
+
+/* ---------- scene motion ---------- */
+.scroll { animation: scroll linear infinite; }
+.far  { animation-duration: 40s; }
+.mid  { animation-duration: 8s; }
+.near { animation-duration: 3s; }
+@keyframes scroll { to { transform: translateX(-800px); } }
+
+/* ---------- character rig (coords are the inner 300x360 viewBox) ---------- */
+#rig   { transform-origin: 150px 215px; animation: bob .3s ease-in-out infinite; }
+@keyframes bob { 0%,100% { transform: translateY(0) rotate(7deg); } 50% { transform: translateY(-9px) rotate(7deg); } }
+
+.thigh { transform-origin: 151px 212px; animation: thigh .6s ease-in-out infinite; }
+.shin  { transform-origin: 151px 262px; animation: shin .6s linear infinite; }
+.legB .thigh, .legB .shin { animation-delay: -.3s; }
+@keyframes thigh { 0%,100% { transform: rotate(-38deg); } 50% { transform: rotate(32deg); } }
+@keyframes shin { 0%,100% { transform: rotate(8deg); } 30% { transform: rotate(14deg); } 55% { transform: rotate(35deg); } 75% { transform: rotate(95deg); } }
+
+.armF   { transform-origin: 162px 150px; animation: armF .6s ease-in-out infinite; }
+.foreF  { transform-origin: 162px 190px; animation: foreF .6s ease-in-out infinite; }
+@keyframes armF { 0%,100% { transform: rotate(45deg); } 50% { transform: rotate(-55deg); } }
+@keyframes foreF { 0%,100% { transform: rotate(-60deg); } 50% { transform: rotate(-95deg); } }
+
+.armB { transform-origin: 150px 150px; animation: sway .3s ease-in-out infinite; }
+.head { transform-origin: 166px 128px; animation: sway .3s ease-in-out infinite reverse; }
+@keyframes sway { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+.tail { transform-origin: 130px 222px; animation: tail .6s ease-in-out infinite alternate; }
+@keyframes tail { from { transform: rotate(-9deg); } to { transform: rotate(7deg); } }
+.sash { transform-origin: 126px 218px; animation: tail .3s ease-in-out infinite alternate; }
+
+.aura { opacity: 0; transition: opacity .4s; }
+.speed { opacity: 0; transition: opacity .3s; }
+.speed line { animation: zip .5s linear infinite; }
+.speed line:nth-child(2) { animation-delay: -.2s; }
+.speed line:nth-child(3) { animation-delay: -.35s; }
+@keyframes zip { from { transform: translateX(120px); } to { transform: translateX(-260px); } }
+
+#jumper { transition: transform .5s cubic-bezier(.3,1.4,.5,1); }
+.shadow { transform-origin: 330px 378px; transition: transform .5s, opacity .5s; }
+
+/* jump */
+.jumping #jumper { animation: jump .75s ease-in-out; }
+.jumping .shadow { animation: shadowJ .75s ease-in-out; }
+@keyframes jump { 0%,100% { transform: translateY(0); } 40%,60% { transform: translateY(-150px); } }
+@keyframes shadowJ { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(.5); opacity: .4; } }
+.jumping .legF .thigh { animation: none; transform: rotate(-55deg); }
+.jumping .legF .shin  { animation: none; transform: rotate(85deg); }
+.jumping .legB .thigh { animation: none; transform: rotate(25deg); }
+.jumping .legB .shin  { animation: none; transform: rotate(60deg); }
+
+/* fly (Vayu boost) */
+.flying #jumper { transform: translateY(-120px); }
+.flying #rig { animation: float 1.4s ease-in-out infinite; }
+@keyframes float { 0%,100% { transform: translateY(0) rotate(30deg); } 50% { transform: translateY(-10px) rotate(30deg); } }
+.flying .thigh { animation: none; transform: rotate(38deg); }
+.flying .legB .thigh { transform: rotate(48deg); }
+.flying .shin { animation: none; transform: rotate(18deg); }
+.flying .armF { animation: none; transform: rotate(-130deg); }
+.flying .foreF { animation: none; transform: rotate(-8deg); }
+.flying .aura, .flying .speed { opacity: 1; }
+.flying .shadow { transform: scale(.45); opacity: .35; }
+
+@media (prefers-reduced-motion: reduce) {
+  .stage * { animation-play-state: paused !important; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Hanuman Run</h1>
+    <p>Hero character concept: the run cycle, jump and Vayu boost</p>
+  </header>
+
+  <div class="stage" id="stage">
+    <svg class="scene" viewBox="0 0 800 460" role="img" aria-label="Animated Hanuman running through a temple corridor at dusk, holding a golden gada">
+      <defs>
+        <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1B1440"/>
+          <stop offset=".55" stop-color="#6B2C5C"/>
+          <stop offset="1" stop-color="#F08A3C"/>
+        </linearGradient>
+        <radialGradient id="gGold" cx=".35" cy=".35" r=".7">
+          <stop offset="0" stop-color="#FFF0A8"/>
+          <stop offset=".45" stop-color="#F2B630"/>
+          <stop offset="1" stop-color="#A86F0E"/>
+        </radialGradient>
+        <radialGradient id="gAura">
+          <stop offset="0" stop-color="#FFD36B" stop-opacity=".55"/>
+          <stop offset="1" stop-color="#FFD36B" stop-opacity="0"/>
+        </radialGradient>
+        <path id="mandir" d="M0 0 V-40 H8 V-60 H14 C16 -100 30 -140 45 -160 C60 -140 74 -100 76 -60 H82 V-40 H90 V0 Z M40 -160 h10 v-6 a5 5 0 0 0 -10 0 z M44 -170 v-22 l16 6 l-16 6"/>
+        <g id="pillar">
+          <rect x="-18" y="190" width="36" height="170" fill="#2A1838"/>
+          <rect x="-27" y="176" width="54" height="16" rx="3" fill="#36203F"/>
+          <rect x="-25" y="352" width="50" height="20" rx="3" fill="#36203F"/>
+          <rect x="-10" y="210" width="6" height="130" fill="#3A2448"/>
+        </g>
+        <g id="bell">
+          <line x1="0" y1="180" x2="0" y2="214" stroke="#7A5420" stroke-width="2"/>
+          <path d="M-9 228 Q-9 212 0 212 Q9 212 9 228 Z" fill="#C8902A"/>
+          <circle cx="0" cy="230" r="2.5" fill="#C8902A"/>
+        </g>
+        <g id="laddoo">
+          <circle r="10" fill="#F5A623" stroke="#B9700C" stroke-width="2"/>
+          <circle cx="-3" cy="-3" r="1.6" fill="#FFE1A0"/><circle cx="3" cy="2" r="1.6" fill="#FFE1A0"/><circle cx="-2" cy="4" r="1.3" fill="#FFE1A0"/>
+        </g>
+      </defs>
+
+      <rect width="800" height="460" fill="url(#gSky)"/>
+      <circle cx="620" cy="300" r="150" fill="#FFC46B" opacity=".18"/>
+      <circle cx="620" cy="300" r="78" fill="#FFC46B"/>
+
+      <g class="scroll far" fill="#3A2350">
+        <use href="#mandir" transform="translate(40 340) scale(.9)"/>
+        <use href="#mandir" transform="translate(250 340) scale(.6)"/>
+        <use href="#mandir" transform="translate(470 340) scale(1.15)"/>
+        <use href="#mandir" transform="translate(680 340) scale(.75)"/>
+        <use href="#mandir" transform="translate(840 340) scale(.9)"/>
+        <use href="#mandir" transform="translate(1050 340) scale(.6)"/>
+        <use href="#mandir" transform="translate(1270 340) scale(1.15)"/>
+        <use href="#mandir" transform="translate(1480 340) scale(.75)"/>
+        <rect x="0" y="330" width="1600" height="50"/>
+      </g>
+
+      <g class="scroll mid">
+        <rect x="0" y="160" width="1600" height="18" fill="#36203F"/>
+        <use href="#pillar" x="60"/><use href="#pillar" x="260"/><use href="#pillar" x="460"/><use href="#pillar" x="660"/>
+        <use href="#pillar" x="860"/><use href="#pillar" x="1060"/><use href="#pillar" x="1260"/><use href="#pillar" x="1460"/>
+        <use href="#bell" x="160"/><use href="#bell" x="360"/><use href="#bell" x="560"/><use href="#bell" x="760"/>
+        <use href="#bell" x="960"/><use href="#bell" x="1160"/><use href="#bell" x="1360"/><use href="#bell" x="1560"/>
+      </g>
+
+      <rect x="0" y="372" width="800" height="88" fill="#5A3A2E"/>
+      <rect x="0" y="372" width="800" height="4" fill="#C98A4B"/>
+      <g class="scroll near">
+        <g stroke="#3F271F" stroke-width="3">
+          <line x1="40" y1="376" x2="10" y2="460"/><line x1="120" y1="376" x2="90" y2="460"/><line x1="200" y1="376" x2="170" y2="460"/><line x1="280" y1="376" x2="250" y2="460"/>
+          <line x1="360" y1="376" x2="330" y2="460"/><line x1="440" y1="376" x2="410" y2="460"/><line x1="520" y1="376" x2="490" y2="460"/><line x1="600" y1="376" x2="570" y2="460"/>
+          <line x1="680" y1="376" x2="650" y2="460"/><line x1="760" y1="376" x2="730" y2="460"/><line x1="840" y1="376" x2="810" y2="460"/><line x1="920" y1="376" x2="890" y2="460"/>
+          <line x1="1000" y1="376" x2="970" y2="460"/><line x1="1080" y1="376" x2="1050" y2="460"/><line x1="1160" y1="376" x2="1130" y2="460"/><line x1="1240" y1="376" x2="1210" y2="460"/>
+          <line x1="1320" y1="376" x2="1290" y2="460"/><line x1="1400" y1="376" x2="1370" y2="460"/><line x1="1480" y1="376" x2="1450" y2="460"/><line x1="1560" y1="376" x2="1530" y2="460"/>
+          <line x1="0" y1="415" x2="1600" y2="415" stroke-width="2"/>
+        </g>
+        <use href="#laddoo" x="520" y="340"/><use href="#laddoo" x="560" y="326"/><use href="#laddoo" x="600" y="340"/>
+        <use href="#laddoo" x="1320" y="340"/><use href="#laddoo" x="1360" y="326"/><use href="#laddoo" x="1400" y="340"/>
+      </g>
+
+      <ellipse class="shadow" cx="330" cy="378" rx="48" ry="7" fill="#000" opacity=".35"/>
+
+      <g class="speed" stroke="#FFE7B0" stroke-width="3" stroke-linecap="round" opacity=".8">
+        <line x1="360" y1="200" x2="420" y2="200"/>
+        <line x1="400" y1="250" x2="480" y2="250"/>
+        <line x1="380" y1="300" x2="430" y2="300"/>
+      </g>
+
+      <!-- Hanuman: nested viewport so the rig's transform origins use its own 300x360 coordinates -->
+      <svg x="180" y="52" width="300" height="360" viewBox="0 0 300 360" overflow="visible">
+        <g id="jumper">
+          <g id="rig">
+            <circle class="aura" cx="160" cy="170" r="150" fill="url(#gAura)"/>
+
+            <g class="tail">
+              <path d="M130 222 C96 232 68 208 72 172 C76 138 58 118 40 128 C28 136 34 154 50 148" fill="none" stroke="#9E3A16" stroke-width="12" stroke-linecap="round"/>
+              <path d="M130 222 C96 232 68 208 72 172 C76 138 58 118 40 128 C28 136 34 154 50 148" fill="none" stroke="#E0602A" stroke-width="7" stroke-linecap="round"/>
+            </g>
+
+            <g class="armB">
+              <line x1="150" y1="150" x2="122" y2="172" stroke="#B8461C" stroke-width="20" stroke-linecap="round"/>
+              <line x1="156" y1="168" x2="92" y2="82" stroke="#8A5A0C" stroke-width="7" stroke-linecap="round"/>
+              <circle cx="157" cy="170" r="6" fill="#F2B630"/>
+              <ellipse cx="100" cy="93" rx="8" ry="4.5" transform="rotate(53 100 93)" fill="#F2B630"/>
+              <path d="M77.6 52.8 L64 45 L68 60 Z" fill="#F2B630"/>
+              <circle cx="86" cy="74" r="24" fill="url(#gGold)" stroke="#8A5A0C" stroke-width="2"/>
+              <path d="M66 66 Q86 74 104 88" fill="none" stroke="#B07A12" stroke-width="2"/>
+              <path d="M70 56 Q90 62 108 76" fill="none" stroke="#B07A12" stroke-width="2"/>
+              <circle cx="80" cy="66" r="3" fill="#C8102E"/>
+              <line x1="122" y1="172" x2="128" y2="134" stroke="#B8461C" stroke-width="18" stroke-linecap="round"/>
+              <circle cx="129" cy="131" r="10" fill="#B8461C"/>
+            </g>
+
+            <g class="leg legB">
+              <g class="thigh">
+                <rect x="138" y="206" width="26" height="62" rx="13" fill="#B8461C"/>
+                <g class="shin">
+                  <rect x="141" y="256" width="20" height="58" rx="10" fill="#B8461C"/>
+                  <rect x="140" y="298" width="22" height="6" rx="3" fill="#B07A12"/>
+                  <ellipse cx="160" cy="316" rx="17" ry="8" fill="#B8461C"/>
+                </g>
+                <path d="M134 206 h34 l-2 40 q-15 9 -30 0 z" fill="#8A0E24"/>
+              </g>
+            </g>
+
+            <path d="M128 222 C118 186 122 152 144 138 C164 126 192 134 194 162 C196 188 186 208 174 222 Z" fill="#E0602A"/>
+            <path d="M162 158 Q176 168 190 158" fill="none" stroke="#B8461C" stroke-width="2.5" opacity=".7"/>
+            <path d="M170 182 q6 4 12 0 M168 196 q6 4 12 0" fill="none" stroke="#B8461C" stroke-width="2" opacity=".55"/>
+            <path d="M146 140 Q168 180 178 214" fill="none" stroke="#FFF1D6" stroke-width="3"/>
+            <path d="M150 140 Q170 164 190 146" fill="none" stroke="#F2B630" stroke-width="5" stroke-linecap="round"/>
+            <circle cx="171" cy="157" r="5" fill="#C8102E" stroke="#F2B630" stroke-width="2"/>
+
+            <g class="leg legF">
+              <g class="thigh">
+                <rect x="138" y="206" width="26" height="62" rx="13" fill="#E0602A"/>
+                <g class="shin">
+                  <rect x="141" y="256" width="20" height="58" rx="10" fill="#E0602A"/>
+                  <rect x="140" y="298" width="22" height="6" rx="3" fill="#F2B630"/>
+                  <ellipse cx="160" cy="316" rx="17" ry="8" fill="#E0602A"/>
+                </g>
+                <path d="M134 206 h34 l-2 40 q-15 9 -30 0 z" fill="#B3122E"/>
+                <path d="M136 244 q15 9 30 0" fill="none" stroke="#F2B630" stroke-width="3"/>
+              </g>
+            </g>
+
+            <path class="sash" d="M126 218 Q106 232 92 252 Q112 248 130 232 Z" fill="#F2B630"/>
+            <path d="M122 216 Q152 230 182 214 L176 246 Q166 252 152 250 L146 236 L138 250 Q126 248 122 240 Z" fill="#B3122E"/>
+            <path d="M124 208 Q152 220 180 206 L180 218 Q152 232 124 220 Z" fill="#F2B630"/>
+
+            <g class="head">
+              <circle cx="140" cy="102" r="12" fill="#E0602A"/>
+              <circle cx="140" cy="102" r="6" fill="#F7C59A"/>
+              <circle cx="140" cy="116" r="4" fill="#F2B630"/>
+              <circle cx="166" cy="96" r="33" fill="#E0602A"/>
+              <ellipse cx="183" cy="100" rx="22" ry="21" fill="#F7C59A"/>
+              <ellipse cx="190" cy="116" rx="17" ry="12" fill="#FBDDBD"/>
+              <path d="M170 80 q9 -6 18 -1 M190 80 q6 -3 10 1" fill="none" stroke="#7A2A10" stroke-width="3" stroke-linecap="round"/>
+              <ellipse cx="180" cy="93" rx="7" ry="9" fill="#fff"/>
+              <circle cx="183" cy="94" r="4.2" fill="#2A140A"/>
+              <circle cx="184.5" cy="92" r="1.5" fill="#fff"/>
+              <ellipse cx="197" cy="94" rx="5" ry="8" fill="#fff"/>
+              <circle cx="199" cy="95" r="3.5" fill="#2A140A"/>
+              <ellipse cx="201" cy="110" rx="4" ry="3" fill="#7A2A10"/>
+              <path d="M182 121 Q192 129 202 119" fill="none" stroke="#7A2A10" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M190 64 L191.5 77 Q193 79 194.5 77 L196 64" fill="none" stroke="#C8102E" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M138 74 Q166 60 196 70 L192 58 Q166 48 142 60 Z" fill="#F2B630" stroke="#A86F0E" stroke-width="1.5"/>
+              <path d="M146 60 L167 14 L188 57 Z" fill="url(#gGold)" stroke="#A86F0E" stroke-width="1.5"/>
+              <path d="M154 46 L180 44 M159 34 L175 33" stroke="#A86F0E" stroke-width="1.5"/>
+              <circle cx="167" cy="54" r="5" fill="#C8102E" stroke="#FFF0A8" stroke-width="1.5"/>
+              <circle cx="167" cy="13" r="4" fill="#F2B630"/>
+            </g>
+
+            <g class="armF">
+              <rect x="150" y="142" width="24" height="52" rx="12" fill="#E0602A"/>
+              <rect x="150" y="162" width="24" height="6" rx="3" fill="#F2B630"/>
+              <g class="foreF">
+                <rect x="152" y="184" width="20" height="44" rx="10" fill="#E0602A"/>
+                <rect x="151" y="214" width="22" height="6" rx="3" fill="#F2B630"/>
+                <circle cx="162" cy="232" r="11" fill="#E0602A"/>
+              </g>
+            </g>
+          </g>
+        </g>
+      </svg>
+    </svg>
+    <div class="hud" aria-hidden="true"><span>Distance <b id="dist">0</b> m</span><span id="mode">Running</span></div>
+  </div>
+
+  <div class="controls" role="group" aria-label="Character moves">
+    <button id="btnRun" aria-pressed="true">Run</button>
+    <button id="btnJump" aria-pressed="false">Jump</button>
+    <button id="btnFly" aria-pressed="false">Vayu boost</button>
+    <span class="hint"><kbd>Space</kbd> jump · <kbd>F</kbd> fly</span>
+  </div>
+
+  <div class="sheet">
+    <section>
+      <h2>Palette</h2>
+      <ul>
+        <li><i class="sw" style="background:#E0602A"></i><strong>Sindoor</strong><span>skin</span><code>#E0602A</code></li>
+        <li><i class="sw" style="background:#F7C59A"></i><strong>Muzzle</strong><span>face, inner ear</span><code>#F7C59A</code></li>
+        <li><i class="sw" style="background:#F2B630"></i><strong>Mukut gold</strong><span>crown, gada, jewellery</span><code>#F2B630</code></li>
+        <li><i class="sw" style="background:#B3122E"></i><strong>Dhoti red</strong><span>dhoti, gem accents</span><code>#B3122E</code></li>
+        <li><i class="sw" style="background:#1B1440"></i><strong>Dusk</strong><span>sky behind temples</span><code>#1B1440</code></li>
+      </ul>
+    </section>
+    <section>
+      <h2>Signature details</h2>
+      <ul>
+        <li><strong>Mukut</strong><span>tall gold crown with a ruby, readable at small sizes</span></li>
+        <li><strong>Gada</strong><span>carried on the shoulder while running, swung for obstacles later</span></li>
+        <li><strong>Tail</strong><span>curls behind and sways for balance</span></li>
+        <li><strong>Tilak</strong><span>red U-mark on the forehead, janeu across the chest</span></li>
+      </ul>
+    </section>
+    <section>
+      <h2>Moves</h2>
+      <ul>
+        <li><strong>Run</strong><span>0.6 s loop, legs and arms in opposition</span></li>
+        <li><strong>Jump</strong><span>swipe up, knees tucked, 0.75 s arc</span></li>
+        <li><strong>Vayu boost</strong><span>power-up: flies above the path, fist forward</span></li>
+        <li><strong>Next</strong><span>slide under arches, gada smash, turn left/right</span></li>
+      </ul>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  var stage = document.getElementById('stage');
+  var btnRun = document.getElementById('btnRun'), btnJump = document.getElementById('btnJump'), btnFly = document.getElementById('btnFly');
+  var modeEl = document.getElementById('mode'), distEl = document.getElementById('dist');
+  var jumpTimer = null;
+
+  function setMode(flying) {
+    stage.classList.toggle('flying', flying);
+    btnRun.setAttribute('aria-pressed', String(!flying));
+    btnFly.setAttribute('aria-pressed', String(flying));
+    modeEl.textContent = flying ? 'Vayu boost!' : 'Running';
+  }
+  function jump() {
+    if (stage.classList.contains('flying') || stage.classList.contains('jumping')) return;
+    stage.classList.add('jumping');
+    modeEl.textContent = 'Jump!';
+    btnJump.setAttribute('aria-pressed', 'true');
+    clearTimeout(jumpTimer);
+    jumpTimer = setTimeout(function () {
+      stage.classList.remove('jumping');
+      btnJump.setAttribute('aria-pressed', 'false');
+      modeEl.textContent = 'Running';
+    }, 750);
+  }
+  btnRun.addEventListener('click', function () { setMode(false); });
+  btnFly.addEventListener('click', function () { setMode(!stage.classList.contains('flying')); });
+  btnJump.addEventListener('click', jump);
+  stage.addEventListener('click', jump);
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'BUTTON' && (e.key === ' ' || e.key === 'Enter')) return;
+    if (e.key === ' ' || e.key === 'ArrowUp') { e.preventDefault(); jump(); }
+    else if (e.key === 'f' || e.key === 'F') setMode(!stage.classList.contains('flying'));
+  });
+
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var dist = 0, last = null;
+  function tick(t) {
+    if (last !== null) dist += (t - last) / 1000 * (stage.classList.contains('flying') ? 28 : 12);
+    last = t;
+    distEl.textContent = Math.floor(dist).toLocaleString();
+    requestAnimationFrame(tick);
+  }
+  if (!reduce) requestAnimationFrame(tick);
+})();
+</script>

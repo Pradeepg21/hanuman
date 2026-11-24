@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Hanuman Run</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<!-- ======================= HUD ======================= -->
+<div id="hud" class="hidden">
+  <div class="hud-top">
+    <button id="btnPause" class="icon-btn" aria-label="Pause"><span class="pause-ic"></span></button>
+    <div id="progress">
+      <div class="prog-label" id="progLabel">Lanka 1800 m</div>
+      <div class="prog-bar"><div class="prog-fill" id="progFill"></div><div class="prog-hero" id="progHero"></div></div>
+    </div>
+    <div class="hud-stats">
+      <div id="hudScore" class="score">0</div>
+      <div class="hud-row"><span class="coin-ic"></span><span id="hudCoins">0</span></div>
+      <div class="hud-row small"><span id="hudDist">0</span>&nbsp;m <span class="mult">×<span id="hudMult">1</span></span></div>
+    </div>
+  </div>
+  <div id="powerBars"></div>
+  <div id="banner"><div class="b-title"></div><div class="b-sub"></div></div>
+  <div id="toasts"></div>
+  <div id="turnHint"><div class="arrow left">‹‹</div><div class="t-text">SWIPE TO TURN</div><div class="arrow right">››</div></div>
+  <div id="tutorial"></div>
+  <div id="chaserWarn">RAKSHASA IS CATCHING UP!</div>
+  <div id="flash"></div>
+</div>
+
+<!-- ======================= MENU ======================= -->
+<div id="menu" class="screen">
+  <div class="menu-top">
+    <div class="kicker">॥ जय श्री राम ॥</div>
+    <h1>Hanuman Run</h1>
+    <div class="subtitle">The Leap to Lanka</div>
+  </div>
+  <div class="menu-bottom">
+    <div class="menu-stats">
+      <div class="stat"><span class="lbl">Best</span><b id="mBest">0</b></div>
+      <div class="stat"><span class="coin-ic"></span><b id="mCoins">0</b></div>
+      <div class="stat"><span class="gem-ic"></span><b id="mGems">0</b></div>
+      <div class="stat"><span class="lbl">Score ×</span><b id="mMult">1</b></div>
+    </div>
+    <button id="btnPlay" class="btn primary big">RUN!</button>
+    <div class="menu-row">
+      <button id="btnShop" class="btn">Shop</button>
+      <button id="btnMissions" class="btn">Missions</button>
+      <button id="btnHelp" class="btn">How to play</button>
+      <button id="btnSettings" class="btn round" aria-label="Settings">⚙</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= PANELS ======================= -->
+<div id="panel" class="panel-wrap hidden">
+  <div class="panel">
+    <div class="panel-head"><h2 id="panelTitle">Shop</h2><button class="btn round" id="panelClose" aria-label="Close">✕</button></div>
+    <div class="panel-body" id="panelBody"></div>
+  </div>
+</div>
+
+<!-- ======================= PAUSE ======================= -->
+<div id="pause" class="screen dim hidden">
+  <h2 class="big-title">Paused</h2>
+  <div id="pauseMissions" class="mission-list compact"></div>
+  <button id="btnResume" class="btn primary big">Resume</button>
+  <div class="menu-row">
+    <button id="btnRestart" class="btn">Restart</button>
+    <button id="btnHome" class="btn">Home</button>
+  </div>
+</div>
+
+<!-- ======================= REVIVE ======================= -->
+<div id="revive" class="screen dim hidden">
+  <h2 class="big-title">Save Me!</h2>
+  <div class="revive-ring"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" class="ring-bg"/><circle cx="50" cy="50" r="44" class="ring-fg" id="reviveRing"/></svg><div class="revive-cost" id="reviveCost"></div></div>
+  <button id="btnRevive" class="btn primary big">Revive</button>
+  <button id="btnNoRevive" class="btn">No thanks</button>
+</div>
+
+<!-- ======================= GAME OVER ======================= -->
+<div id="over" class="screen dim hidden">
+  <div class="over-card">
+    <div class="kicker" id="overReason">Caught!</div>
+    <div class="over-score" id="overScore">0</div>
+    <div class="over-best" id="overBest"></div>
+    <div class="over-grid">
+      <div><span class="lbl">Distance</span><b id="overDist">0 m</b></div>
+      <div><span class="lbl">Coins</span><b id="overCoins">0</b></div>
+      <div><span class="lbl">Rakshasas</span><b id="overSmash">0</b></div>
+      <div><span class="lbl">Reached</span><b id="overBiome">Forest</b></div>
+    </div>
+    <div id="overMissions" class="mission-list compact"></div>
+  </div>
+  <button id="btnAgain" class="btn primary big">Run Again</button>
+  <div class="menu-row">
+    <button id="btnOverShop" class="btn">Shop</button>
+    <button id="btnOverHome" class="btn">Home</button>
+  </div>
+</div>
+
+<div id="loading" class="screen"><div class="kicker">॥ जय श्री राम ॥</div><h1>Hanuman Run</h1><div class="subtitle">Loading…</div></div>
+
+<script src="three.min.js"></script>
+<script src="GLTFLoader.js"></script>
+<script src="js/models.js"></script>
+<script src="js/heroglb.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/world.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
